@@ -897,6 +897,27 @@ class S(PythonMixin):
         """
         return self._clone(next_step=('highlight', (fields, kwargs)))
 
+    def suggest(self, name, term, **kwargs):
+        """
+        Set suggestion options.
+
+        :arg name: The name to use for the suggestions.
+        :arg term: The term to suggest similar looking terms for.
+
+        Additional keyword options:
+
+        * ``field`` -- The field to base suggestions upon, defaults to _all
+
+        Results will have a ``_suggestions`` property containing the
+        suggestions for all terms.
+
+        .. Note::
+
+           Calling this multiple times will add multiple suggest clauses to
+           the query.
+        """
+        return self._clone(next_step=('suggest', (name, term, kwargs)))
+
     def extra(self, **kw):
         """
         Return a new S instance with extra args combined with existing
@@ -940,6 +961,7 @@ class S(PythonMixin):
         demote = None
         highlight_fields = set()
         highlight_options = {}
+        suggestions = {}
         explain = False
         as_list = as_dict = False
         for action, value in self.steps:
@@ -986,6 +1008,8 @@ class S(PythonMixin):
                 else:
                     highlight_fields |= set(value[0])
                 highlight_options.update(value[1])
+            elif action == 'suggest':
+                suggestions[value[0]] = (value[1], value[2])
             elif action in ('es', 'indexes', 'doctypes', 'boost'):
                 # Ignore these--we use these elsewhere, but want to
                 # make sure lack of handling it here doesn't throw an
@@ -1058,6 +1082,14 @@ class S(PythonMixin):
 
         if explain:
             qs['explain'] = True
+
+        for suggestion, (term, kwargs) in suggestions.iteritems():
+            qs.setdefault('suggest', {})[suggestion] = {
+                'text': term,
+                'term': {
+                    'field': kwargs.get('field', '_all'),
+                },
+            }
 
         self.fields, self.as_list, self.as_dict = fields, as_list, as_dict
         return qs
@@ -1459,6 +1491,16 @@ class S(PythonMixin):
                     'Facet _type "%s". key "%s" val "%r"' %
                     (val['_type'], key, val))
         return facets
+
+    def suggestions(self):
+        """
+        Executes search and returns suggestions.
+
+        >>> s = S().query(name='Aice').suggest(name='Aice')
+        >>> suggestions = s.suggestions()['name']
+
+        """
+        return self._do_search().response.get('suggest', {})
 
 
 class MLT(PythonMixin):
