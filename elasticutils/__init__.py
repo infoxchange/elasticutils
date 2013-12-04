@@ -918,6 +918,14 @@ class S(PythonMixin):
         """
         return self._clone(next_step=('suggest', (name, term, kwargs)))
 
+    def search_type(self, search_type):
+        """Set ElasticSearch search type.
+
+        :arg search_type: The search type to set.
+
+        """
+        return self._clone(next_step=('search_type', search_type))
+
     def extra(self, **kw):
         """
         Return a new S instance with extra args combined with existing
@@ -964,6 +972,7 @@ class S(PythonMixin):
         suggestions = {}
         explain = False
         as_list = as_dict = False
+        search_type = None
         for action, value in self.steps:
             if action == 'order_by':
                 sort = []
@@ -1010,6 +1019,8 @@ class S(PythonMixin):
                 highlight_options.update(value[1])
             elif action == 'suggest':
                 suggestions[value[0]] = (value[1], value[2])
+            elif action == 'search_type':
+                search_type = value
             elif action in ('es', 'indexes', 'doctypes', 'boost'):
                 # Ignore these--we use these elsewhere, but want to
                 # make sure lack of handling it here doesn't throw an
@@ -1092,6 +1103,7 @@ class S(PythonMixin):
             }
 
         self.fields, self.as_list, self.as_dict = fields, as_list, as_dict
+        self.search_type = search_type
         return qs
 
     def _build_highlight(self, fields, options):
@@ -1356,9 +1368,14 @@ class S(PythonMixin):
             raise BadSearch(
                 'You must specify an index if you are specifying doctypes.')
 
+        extra_search_kwargs = {}
+        if self.search_type:
+            extra_search_kwargs['search_type'] = self.search_type
+
         hits = es.search(body=qs,
                          index=self.get_indexes(),
-                         doc_type=self.get_doctypes())
+                         doc_type=self.get_doctypes(),
+                         **extra_search_kwargs)
 
         log.debug('[%s] %s' % (hits['took'], qs))
         return hits
