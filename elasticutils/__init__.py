@@ -1095,11 +1095,11 @@ class S(PythonMixin):
             qs['explain'] = True
 
         for suggestion, (term, kwargs) in suggestions.iteritems():
+            kwargs.setdefault('field', '_all')
+
             qs.setdefault('suggest', {})[suggestion] = {
                 'text': term,
-                'term': {
-                    'field': kwargs.get('field', '_all'),
-                },
+                'term': kwargs,
             }
 
         self.fields, self.as_list, self.as_dict = fields, as_list, as_dict
