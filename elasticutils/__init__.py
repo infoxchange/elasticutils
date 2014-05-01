@@ -46,7 +46,8 @@ QUERY_ACTION_MAP = {
     'match': 'match',
     'match_phrase': 'match_phrase',
     'wildcard': 'wildcard',
-    'fuzzy': 'fuzzy'
+    'fuzzy': 'fuzzy',
+    'flt': 'flt_field',
 }
 
 
