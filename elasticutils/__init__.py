@@ -32,7 +32,9 @@ QUERY_ACTION_MAP = {
     'match': 'match',  # ES 0.19.9 renamed text to match
     'match_phrase': 'match_phrase',
     'wildcard': 'wildcard',
-    'fuzzy': 'fuzzy'}
+    'fuzzy': 'fuzzy',
+    'flt': 'flt_field',
+}
 
 
 #: List of text/match actions.
