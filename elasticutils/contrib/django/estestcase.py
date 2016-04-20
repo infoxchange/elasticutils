@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from django.conf import settings
 from elasticsearch.exceptions import ConnectionError
-from elasticsearch.helpers import bulk_index
+from elasticsearch.helpers import bulk
 import six
 
 # Try really really hard to find a valid skip thing.
@@ -157,7 +157,7 @@ class ESTestCase(TestCase):
 
         """
         documents = (dict(d, _id=d[id_field]) for d in documents)
-        bulk_index(cls.get_es(), documents, index=index, doc_type=doctype)
+        bulk(cls.get_es(), documents, index=index, doc_type=doctype)
         cls.refresh(index)
 
     @classmethod

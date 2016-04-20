@@ -6,7 +6,7 @@ import six
 from six import string_types
 
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk_index
+from elasticsearch.helpers import bulk
 
 from elasticutils._version import __version__  # noqa
 from elasticutils import monkeypatch
@@ -2262,7 +2262,7 @@ class Indexable(object):
 
         documents = (dict(d, _id=d[id_field]) for d in documents)
 
-        bulk_index(
+        bulk(
             es,
             documents,
             index=index,

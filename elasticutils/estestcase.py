@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from elasticsearch.helpers import bulk_index
+from elasticsearch.helpers import bulk
 try:
     from nose import SkipTest
 except ImportError:
@@ -123,8 +123,8 @@ class ESTestCase(TestCase):
 
         """
         documents = (dict(d, _id=d[id_field]) for d in documents)
-        bulk_index(cls.get_es(), documents, index=cls.index_name,
-                   doc_type=cls.mapping_type_name)
+        bulk(cls.get_es(), documents, index=cls.index_name,
+             doc_type=cls.mapping_type_name)
         cls.refresh()
 
     @classmethod
